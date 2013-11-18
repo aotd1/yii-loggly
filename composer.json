@@ -1,0 +1,15 @@
+{
+    "name": "aotd/yii-loggly",
+    "description": "Yii Loggly is a Log Writer that sends all log messages to a loggly account",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexey Ashurok",
+            "email": "me@aotd.ru"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.0",
+        "ext-curl": "*"
+    }
+}
