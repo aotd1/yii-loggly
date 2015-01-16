@@ -16,7 +16,7 @@ class LogglyRoute extends CLogRoute
     public $finishRequest = true;
 
     /* @var string */
-    public $url = 'https://logs.loggly.com/inputs/';
+    public $url = 'http://logs-01.loggly.com/inputs/';
 
     /* @var string */
     public $cert;
@@ -29,9 +29,6 @@ class LogglyRoute extends CLogRoute
         if (!is_string($this->inputKey) || strlen($this->inputKey) !== 36) {
             throw new CException("Loggly key '$this->inputKey' must be a valid 36 character string");
         }
-        if ($this->cert === null) {
-            $this->cert = dirname(__FILE__) . '/cert.pem';
-        }
     }
 
     /**
@@ -43,7 +40,7 @@ class LogglyRoute extends CLogRoute
      */
     protected function formatLogMessage($message, $level, $category, $time)
     {
-        return array('timestamp' => date('Y/m/d H:i:s', $time), 'level' => $level, 'category' => $category, 'message' => $message);
+        return array('level' => $level, 'category' => $category, 'message' => $message);
     }
 
     /**
@@ -56,14 +53,11 @@ class LogglyRoute extends CLogRoute
         }
 
         $this->curl = curl_init();
-        curl_setopt($this->curl, CURLOPT_URL, $this->url . $this->inputKey);
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-        curl_setopt($this->curl, CURLOPT_TIMEOUT, 10);
+        curl_setopt($this->curl, CURLOPT_URL, $this->url . $this->inputKey . "/tag/http/");
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('application/x-www-form-urlencoded'));
+        curl_setopt($this->curl, CURLOPT_TIMEOUT, 5);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->curl, CURLOPT_POST, 1);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($this->curl, CURLOPT_CAINFO, $this->cert);
 
         return $this->curl;
     }
@@ -82,7 +76,7 @@ class LogglyRoute extends CLogRoute
         foreach ($logs as $log) {
             $data = json_encode($this->formatLogMessage($log[0], $log[1], $log[2], $log[3]), JSON_FORCE_OBJECT);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_exec($ch);
+            $ret = curl_exec($ch);
         }
     }
 
